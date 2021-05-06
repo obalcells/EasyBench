@@ -3,7 +3,10 @@ import platform, re, requests, shutil, subprocess, sys, time, zipfile
 
 timecontrol = "1000.0"
 GAMES_PER_CONCURRENCY = 16 
+concurrency = GAMES_PER_CONCURRENCY 
 SAVE_PGN_FILES = False
+IS_MACOS = platform.system() == 'Darwin'
+IS_LINUX = platform.system() != 'Darwin' and platform.system() != 'Windows'
 
 def killCutechess(cutechess):
     try:
@@ -14,9 +17,6 @@ def killCutechess(cutechess):
     except Exception as error: pass
 
 def getCutechessCommand():
-
-    # Find max concurrency for the given testing conditions
-    concurrency = GAMES_PER_CONCURRENCY 
 
     # General Cutechess options
     generalflags = '-repeat -recover -srand {0} -resign {1} -draw {2}'.format(
@@ -53,7 +53,13 @@ def getCutechessCommand():
 
     # Combine all flags and add the cutechess program callout
     options = ' '.join([generalflags, setupflags, devflags, baseflags, bookflags])
-    return './cutechess {0}'.format(options), concurrency
+    if IS_LINUX:
+        return './cutechess-linux {0}'.format(options), concurrency
+    elif IS_MACOS:
+        return './cutechess {0}'.format(options), concurrency
+    else:
+        print("EasyBench only runs in MacOS and Linux")
+        return ""
 
 def processCutechess(cutechess, concurrency):
 
